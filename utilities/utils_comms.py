@@ -4,20 +4,13 @@ Supporting functions related to communication
 
 @author: Phu Lai
 """
-import random
-import time
 import math
 import numpy as np
-# import cupy as cp
-# cp.cuda.Device(2).use()
 import pandas as pd
 from scipy import linalg
 from scipy.integrate import quad
 from sklearn.cluster import KMeans
 from utilities import utils, constants
-from functools import lru_cache, wraps
-# from numba import jit, njit, bool_
-from scipy.spatial import Voronoi
 
 
 def generate_setup(L, N, K, U, area, local_scattering_model, nb_realisations, tau_p, sigma_sf, constant_term,
@@ -86,8 +79,6 @@ def generate_setup(L, N, K, U, area, local_scattering_model, nb_realisations, ta
         for k in range(K):
             sf = np.random.randn(distances_APs_UEs[:, k].size)
             # 3GPP LTE model Further Advancements for E-UTRA Physical Layer Aspects (Release 9), Standard 3GPP TS 36.814, 2010.
-            # log normal shadowing model or
-            # log distance path loss model https://www.gaussianwaves.com/2013/09/log-distance-path-loss-or-log-normal-shadowing-model/
             gain_over_noise_dB[:, k] = constant_term - alpha * 10 * np.log10(
                 distances_APs_UEs[:, k]) + sigma_sf * sf - noise_variance_dBm
 
@@ -105,8 +96,7 @@ def generate_setup(L, N, K, U, area, local_scattering_model, nb_realisations, ta
                 H[l * N:(l + 1) * N, :, k] = np.sqrt(0.5) * R_sqrt @ H[l * N:(l + 1) * N, :, k]
 
         # Generate realizations of normalized noise
-        Np = np.sqrt(0.5) * (np.random.randn(N, nb_realisations, L, tau_p)
-                             + 1j * np.random.randn(N, nb_realisations, L, tau_p))
+        Np = np.sqrt(0.5) * (np.random.randn(N, nb_realisations, L, tau_p) + 1j * np.random.randn(N, nb_realisations, L, tau_p))
 
         # save data to pickle files to create reproducible results
         if save_to_pickle:
@@ -121,32 +111,11 @@ def generate_setup(L, N, K, U, area, local_scattering_model, nb_realisations, ta
     if is_print_summary:
         print(f"=========================================\n"
               f"Summary of generated setup:\n"
-              f"{len(locations_UEs)} UEs, {len(locations_APs)} APs ({int(H.shape[0] / len(locations_APs))} antennas per AP) "
+              f"{len(locations_UEs)} UEs, {len(locations_APs)} APs ({int(H.shape[0] / len(locations_APs))} antennas per AP)"
               f"associated with {len(locations_CPUs)} CPUs \n"
               f"Square area: {area} squared meters\n"
               f"Number of channel realisations: {H.shape[1]}\n")
     return locations_APs, locations_UEs, AP_CPU_association, gain_over_noise_dB, R, locations_CPUs, H, Np
-
-
-def classify_UEs_dist(locations_UEs, locations_CPUs, dist_to_border):
-    """
-    Used by Border to classify UEs into cell-edge and cell-centre UEs based on distance to the border
-    :param locations_UEs:
-    :param locations_CPUs:
-    :param dist_to_border:
-    :return:
-    """
-    vor = Voronoi(locations_CPUs)
-    finite_segments, infinite_segments = utils.get_voronoi_segments(vor)
-    all_segments = np.concatenate((finite_segments, infinite_segments), axis=0)
-    cell_edge_UEs = []
-    for k, UE_location in enumerate(locations_UEs):
-        UE_location = np.array([UE_location.real, UE_location.imag])
-        for segment in all_segments:
-            distance, projection, is_projection_within_line_segment = utils.find_dist_and_projection(UE_location, segment[0], segment[1])
-            if distance <= dist_to_border and is_projection_within_line_segment:
-                cell_edge_UEs.append(k)
-    return cell_edge_UEs
 
 
 def generate_CPU_setup(locations_APs, U):
@@ -193,7 +162,7 @@ def generate_normalised_scattering_matrix(locations_APs, locations_UEs, N, gain_
             R[:, :, l, k] = (utils.db2pow(gain_over_noise_dB[l, k])
                              * generate_local_scattering_matrix(N, theta, ASD_deg, antenna_spacing,
                                                                 local_scattering_model))
-    return R  # dimension (N, N, L, K)
+    return R
 
 
 def generate_local_scattering_matrix(N, theta, ASD_deg, antenna_spacing, model):
@@ -239,24 +208,13 @@ def generate_local_scattering_matrix(N, theta, ASD_deg, antenna_spacing, model):
     return lsm
 
 
-# @lru_cache_generate_channel_estimate
 def generate_channel_estimate(R, H, Np, tau_p, pilot_index, p_UEs):
     """
-    Generate channel estimate. This function is the main bottleneck of the program :(
+    Generate channel estimate
     Equation numbers below correspond to equations in Scalable Cell-Free Massive MIMO Systems, Björnson, E. and
     Sanguinetti, L., 2020.
     Code translated from the original MATLAB code at: https://github.com/emilbjornson/scalable-cell-free/blob/master/functionChannelEstimates.m
     to Python with some changes (heterogeneous UE transmit power, etc.)
-
-    # R_Psi = np.linalg.solve(Psi, R[:, :, l, UE_pilot_t_idx])  # np.linalg.solve(Psi, R) = Psi^{-1}R
-    R_Psi = np.dot(R[:, :, l, UE_pilot_t_idx], np.linalg.inv(Psi)) provides results exactly similar to
-    the baseline MATLAB code.
-    R_Psi = np.linalg.solve(Psi, R[:, :, l, UE_pilot_t_idx]) is np.dot()'s equivalence, slightly
-    different results. Haven't looked into why yet, but anw,
-    numpy.linalg.solve() should offer more precise matrix inversions than numpy.linalg.inv()?
-    https://stackoverflow.com/questions/31256252/why-does-numpy-linalg-solve-offer-more-precise-matrix-inversions-than-numpy-li
-    R_Psi = R[:, :, l, UE_pilot_t_idx] / Psi, wrong results coz it's element-wise division. It Matlab, A/b
-    performs right-matrix division.
 
     :param R:                   Matrix with dimension N x N x L x K where (:,:,l,k) is the spatial correlation matrix
                                 between AP l and UE k in setup n, normalized by noise
@@ -424,21 +382,6 @@ def calculate_SEs_downlink_uplink(D, R, H, Np, tau_c, tau_p, p_UEs, max_power_AP
     SEs_P_MMSE_UL = [SE[0] for SE in SEs_P_MMSE_UL]
 
     return SEs_P_MMSE_DL, SEs_P_MMSE_UL
-
-
-def calculate_single_pilot_interference(t, APs, pilot_index, gain_over_noise_dB, D, is_linear):
-    """
-    Calculate received power from a single pilot to an AP or multiple APs
-    NOTE: only consider interference from UEs associated with the same APs
-    """
-    UEs_sharing_pilot_t = [x for x in np.where(pilot_index == t)[0]]  # find UEs sharing pilot t
-    UEs_of_APs = utils.get_UEs_served_by_APs(APs, D)
-    UEs_sharing_pilot_t_of_APs = [x for x in UEs_sharing_pilot_t if
-                                  x in UEs_of_APs]  # find UEs sharing pilot t and associated with APs
-    if is_linear:
-        return np.sum(utils.db2pow(gain_over_noise_dB[APs][:, UEs_sharing_pilot_t_of_APs]))
-    else:
-        return np.sum(gain_over_noise_dB[APs][:, UEs_sharing_pilot_t_of_APs])
 
 
 def get_top_APs_contribute_threshold_LSF(k, APs, gain_over_noise_dB, threshold_LSF):

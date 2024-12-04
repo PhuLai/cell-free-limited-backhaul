@@ -18,14 +18,8 @@ class AlgorithmResult:
                                                                              max_power_AP, pilot_index,
                                                                              gain_over_noise_dB, upsilon, kappa)
         self.fairness_SE_DL, self.fairness_SE_UL = utils.calculate_SE_fairness(self.SEs_DL), utils.calculate_SE_fairness(self.SEs_UL)
-        # K = D.shape[1]
-        # self.SEs_DL, self.SEs_UL = [SE[0] for SE in np.zeros((K, 1))], [SE[0] for SE in np.zeros((K, 1))]
-        # self.fairness_SE_DL, self.fairness_SE_UL = 0, 0
 
         self.execution_time = execution_time
-
-        # total number of times CPUs involved
-        self.times_CPUs_used = utils.get_times_CPUs_used(D, AP_CPU_association)
 
         # Min/max UEs per AP
         self.min_UEs_per_AP, self.max_UEs_per_AP, self.avg_UEs_per_AP = utils.get_min_max_avg_UEs_per_AP(D)
@@ -43,9 +37,8 @@ class AlgorithmResult:
         self.coordinated_UEs = utils.get_UEs_more_than_1_CPU(D, AP_CPU_association)
         self.nb_coordinated_UEs = len(self.coordinated_UEs)
 
-        # Backhaul load UL, including pilot and UL data transmission
-        self.fronthaul_load_UL, self.backhaul_load_UL, self.backhaul_load_DL = utils.get_frontbackhaul_load_no_pilot_spreading(D, AP_CPU_association, N, tau_c, tau_p)
-        # self.fronthaul_load_UL, self.backhaul_load_UL, self.backhaul_load_DL = 0, 0, 0
+        # Fronthaul load
+        self.fronthaul_load_UL, self.fronthaul_load_DL = utils.get_fronthaul_load(D, AP_CPU_association, N, tau_c, tau_p)
 
 
 

@@ -17,14 +17,14 @@ from algorithms import SCF1
 
 
 def allocate_UEs_to_APs(gain_over_noise_dB, R, H, Np, AP_CPU_association, tau_p, tau_c, max_inter_UEs_per_CPU,
-                        p_UEs, max_power_AP, upsilon, kappa, threshold_LSF, is_print_summary):
+                        p_UEs, max_power_AP, upsilon, kappa, is_print_summary):
     start = time.perf_counter()
-    algo = f"{constants.ALGO_MARX_FREITAS}"
+    algo = constants.ALGO_SCF1LIM
     U = len(np.unique(AP_CPU_association))  # number of CPUs
     N = R.shape[0]  # number of antennas
     gain_over_noise_mW = utils.db2pow(gain_over_noise_dB)
 
-    result, master_CPUs, _ = dcc.allocate_UEs_to_APs(gain_over_noise_dB, R, H, Np, AP_CPU_association, tau_p, tau_c,
+    result, master_CPUs, _ = SCF1.allocate_UEs_to_APs(gain_over_noise_dB, R, H, Np, AP_CPU_association, tau_p, tau_c,
                                                              max_power_AP, upsilon, kappa, p_UEs, False)
     pilot_index = pilot_assignment.assign_pilots_bjornson(tau_p, gain_over_noise_dB)
     D = copy.deepcopy(result.D)
@@ -72,23 +72,3 @@ def drop_inter_coordinated_UEs(u, D, AP_CPU_association, gain_over_noise_mW, max
     for k in retained_IC_UEs:
         D[APs_u_UEs_u_non_primary[k], k] = 1
 
-
-def check_IC_UEs(D, AP_CPU_association, master_CPUs):
-    """
-    Print the number of inter-coordinated UEs served by each CPU to validate K_int parameter
-    Note that inter-coordinated UEs here is defined as the original paper "Reducing Inter-CPU Coordination in User-Centric
-    Distributed Massive MIMO Networks": "Moreover, the UE‘s primary CPU calls it a non-inter-coordinated UE, while the
-    other CPUs call it an inter-coordinated UE."
-    While in our work, we define inter-coordinated UEs as UEs that are served by more than one CPU, regardless of whether
-    it is primary or non-primary CPU
-    """
-    U = len(np.unique(AP_CPU_association))
-    for u in range(U):
-        nbr_IC_UEs_j = 0
-        UEs_u = utils.get_UEs_associated_with_CPU(u, D, AP_CPU_association)
-        for k in UEs_u:
-            if u != master_CPUs[k]:
-                CPUs_k = utils.get_CPUs_serving_UE(k, D, AP_CPU_association)
-                if len(CPUs_k) > 1:
-                    nbr_IC_UEs_j += 1
-        print(f"CPU {u} serves {nbr_IC_UEs_j} inter-coordinated UEs")

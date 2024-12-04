@@ -5,7 +5,6 @@ ICC 2019 - 2019 IEEE International Conference on Communications (ICC)
 
 @author: Phu Lai
 """
-import math
 import time
 import numpy as np
 
@@ -16,7 +15,7 @@ from utilities import constants, utils
 def allocate_UEs_to_CPUs(gain_over_noise_dB, R, H, Np, AP_CPU_association, tau_p, tau_c, p_UEs,
                          max_power_AP, upsilon, kappa, top_N_CPUs, is_print_summary):
     start = time.perf_counter()
-    algo = constants.ALGO_GIOVANNI
+    algo = constants.ALGO_SCF2
     # number of UEs, APs, CPUs
     K, L, U = gain_over_noise_dB.shape[1], gain_over_noise_dB.shape[0], len(np.unique(AP_CPU_association))
     N = R.shape[0]  # number of antennas

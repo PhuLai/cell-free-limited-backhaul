@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Solution for determining UE - AP association
-
-Assumption/constraint: 1 UE - 1 CPU
-Scalable design
-Allocate each UE to the CPU with the highest sum LSF or average LSF
+LLSFB (Largest-Large-Scale-Fading-Based): A network-centric variant of the LLSFB user association scheme proposed in [20]
+that we came up with. For each UE, we first identify which network-centric cluster has the greatest sum LSFC, then select
+APs that collectively contribute at least δ% of the total LSFC of all APs in this cluster to serve the UE.
 
 @author: Phu Lai
 """
@@ -15,10 +13,8 @@ from utilities import constants, utils, utils_comms
 
 
 def allocate_UEs_to_CPUs(gain_over_noise_dB, R, H, Np, AP_CPU_association, tau_p, tau_c, p_UEs,
-                         is_LSF_averaged, max_UEs_per_AP, threshold_LSF, max_power_AP, upsilon, kappa, is_print_summary):
-    algo = constants.ALGO_LARGEST_SUM_LSF
-    if is_LSF_averaged:
-        algo = constants.ALGO_LARGEST_AVG_LSF
+                         max_UEs_per_AP, threshold_LSF, max_power_AP, upsilon, kappa, is_print_summary):
+    algo = constants.ALGO_LLSFB
     start = time.perf_counter()
     # number of UEs, APs, CPUs
     K, L, U = gain_over_noise_dB.shape[1], gain_over_noise_dB.shape[0], len(np.unique(AP_CPU_association))
@@ -27,7 +23,7 @@ def allocate_UEs_to_CPUs(gain_over_noise_dB, R, H, Np, AP_CPU_association, tau_p
     D = np.zeros((L, K), dtype=int)
 
     for k in range(K):
-        best_CPU, best_APs = find_APs_for_UE_k(k, AP_CPU_association, gain_over_noise_dB, is_LSF_averaged, D,
+        best_CPU, best_APs = find_APs_for_UE_k(k, AP_CPU_association, gain_over_noise_dB, False, D,
                                                max_UEs_per_AP, threshold_LSF)
         D[best_APs, k] = 1
 

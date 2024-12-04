@@ -34,7 +34,7 @@ def allocate_UEs_to_APs(gain_over_noise_dB, R, H, Np, AP_CPU_association, tau_p,
     :return result:                 AlgorithmResult object
     """
     start = time.perf_counter()
-    algo = constants.ALGO_DCC_1UE_NAPS
+    algo = constants.ALGO_SCF1
     pilot_index = pilot_assignment.assign_pilots_bjornson(tau_p, gain_over_noise_dB)
     threshold = constants.THRESHOLD_NON_MASTER_AP_SERVE_UE  # threshold for when a non-master AP decides to serve a UE
     K, L = gain_over_noise_dB.shape[1], gain_over_noise_dB.shape[0]  # number of UEs, APs

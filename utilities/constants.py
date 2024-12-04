@@ -35,7 +35,6 @@ THRESHOLD_NON_MASTER_AP_SERVE_UE = -40  # dB
 # List of possible UE transmit power (mW)
 UE_POWERs = list(range(10, 110, 10))  # list(range(10, 110, 20))
 
-USE_CUPY = False
 
 """
 PROGRAM CONSTANTS
@@ -50,10 +49,6 @@ NB_UES_PER_CPU_ROUNDING_NEAR = 'NEAREST'
 USE_EXISTING_DATA_MATLAB = 'matlab'
 USE_EXISTING_DATA_PYTHON = 'python'
 
-PILOT_ALLOCATION_METHOD_BJORNSSON = 'bjornsson'
-PILOT_ALLOCATION_METHOD_PROPOSED_1 = 'proposed-1'  # joint pilot and CPU selection
-PILOT_ALLOCATION_METHOD_PROPOSED_2 = 'proposed-2'   # after all allocated
-
 PATH_DATASET = 'datasets'
 PICKLE_LOCATION_APS = 'locations_APs.pickle'
 PICKLE_LOCATION_UES = 'locations_UEs.pickle'
@@ -67,15 +62,10 @@ PICKLE_R = 'R.pickle'
 PICKLE_H = 'H.pickle'
 PICKLE_NP = 'Np.pickle'
 
-SERVER_1_NAME = 'aiotcentre-01.latrobe.edu.au'
-SERVER_2_NAME = 'aiotcentre-02.latrobe.edu.au'
-PERSONAL_PC_NAME = 'FOO'
-
-# get parent directory
-DIR_PRJ = '/data/home/ad/plai/edge_video_analytics/'
-import os
-if os.name == 'nt':
-    # DIR_PRJ = 'E:/workspace-python/edge_video_analytics'
-    DIR_PRJ = 'C:/Users/plai/Desktop/workspace-python/edge_video_analytics'
-    # DIR_PRJ = 'C:/Users/thanh/Desktop/workspace-python/edge_video_analytics'
-DIR_RESULTS = os.path.join(DIR_PRJ, 'results')
+ALGO_BORDER = 'Border'
+ALGO_HYBRID_UA = 'HybridUA'
+ALGO_LLSFB = 'LLSFB'
+ALGO_NEAREST = 'Nearest'
+ALGO_SCF1 = 'SCF1'
+ALGO_SCF1LIM = 'SCF1lim'
+ALGO_SCF2 = 'SCF2'

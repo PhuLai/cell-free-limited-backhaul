@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Solution for determining UE - AP association
-Nearest CPU
-Assumption/constraint: 1 UE - 1 CPU, UE allocated to all APs associated with that CPU
-Note: Nearest CPU might not have sufficient resource to serve the UE. This approach allocates UEs to their nearest APs/CPUs
-regardless of the resource availability.
+This naive network-centric scheme assigns each UE to all APs associated with the UE’s nearest network-centric cluster
 
 @author: Phu Lai
 """
@@ -17,7 +13,7 @@ from utilities import constants, utils
 def allocate_UEs_to_CPUs(gain_over_noise_dB, R, H, Np, AP_CPU_association, tau_p, tau_c, p_UEs,
                          locations_CPUs, locations_UEs, max_power_AP, upsilon, kappa, is_print_summary):
     start = time.perf_counter()
-    algo = constants.ALGO_NEAREST_NAIVE
+    algo = constants.ALGO_NEAREST
     # number of UEs, APs, CPUs
     K, L, U = gain_over_noise_dB.shape[1], gain_over_noise_dB.shape[0], len(np.unique(AP_CPU_association))
     N = R.shape[0]  # number of antennas
