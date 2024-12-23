@@ -2,7 +2,7 @@
 
 This repository contains the source code for the following paper:
 
-Phu Lai, Wei Xiang, William Damario Lukito, Khoa Tran Phan, Peng Cheng, Chang Liu, Guoqiang Mao, "[Hybrid Network- and User-Centric Scalable Cell-Free Massive MIMO for Fronthaul Signaling Minimization](https://ieeexplore.ieee.org/abstract/document/10669738)", IEEE Transactions on Vehicular Technology 2024. 
+Phu Lai, Wei Xiang, William Damario Lukito, Khoa Tran Phan, Peng Cheng, Chang Liu, Guoqiang Mao, "[Hybrid Network- and User-Centric Scalable Cell-Free Massive MIMO for Fronthaul Signaling Minimization]([https://ieeexplore.ieee.org/abstract/document/10669738](https://arxiv.org/abs/2412.15475))", IEEE Transactions on Vehicular Technology 2024. 
 
 If your research publications use the code, please cite our article above. Thank you.
 
